@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Ticket Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .seat.selected {
+        background-color: #3b82f6;
+        color: white;
+      }
+      .seat.unavailable {
+        background-color: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Page 1: Movie Selection -->
+    <div id="moviePage" class="flex justify-center items-center min-h-screen">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-2xl text-center mb-4">Select a Movie</h2>
+        <ul id="movieList" class="space-y-4">
+          <!-- Movie List will be dynamically populated here -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Page 2: Movie Timings -->
+    <div
+      id="timingPage"
+      class="hidden flex justify-center items-center min-h-screen"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-2xl text-center mb-4">Select a Timing for</h2>
+        <h3 id="selectedMovieTitle" class="text-xl text-center mb-6"></h3>
+        <ul id="timingList" class="space-y-4">
+          <!-- Timing List will be dynamically populated here -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- Page 3: Seat Selection -->
+    <div
+      id="seatPage"
+      class="hidden flex justify-center items-center min-h-screen"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-2xl text-center mb-4">Select Seats</h2>
+        <p id="selectedTiming" class="text-center mb-6"></p>
+        <div class="grid grid-cols-5 gap-4 mb-6" id="seatsGrid">
+          <!-- Seats Grid will be dynamically populated here -->
+        </div>
+        <div class="flex justify-between">
+          <p>Total Price: $<span id="totalPrice">0</span></p>
+          <button
+            id="bookNow"
+            class="bg-blue-500 text-white py-2 px-4 rounded-lg"
+          >
+            Book Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Movie, Timing, and Seat data
+      const movies = [
+        {
+          title: "Inception",
+          description:
+            "A skilled thief is given a chance to have his criminal record erased, if he can successfully perform an inception.",
+          timings: ["10:00 AM", "01:30 PM", "04:00 PM", "07:30 PM"],
+          seats: Array(50).fill(true), // 50 available seats (true = available)
+        },
+        {
+          title: "Avengers: Endgame",
+          description:
+            "The Avengers assemble to reverse the damage caused by Thanos in Avengers: Infinity War.",
+          timings: ["11:00 AM", "02:30 PM", "06:00 PM", "09:00 PM"],
+          seats: Array(50).fill(true), // 50 available seats (true = available)
+        },
+      ];
+
+      const ticketPrice = 15; // Price per seat
+      let selectedMovie = null;
+      let selectedTiming = null;
+      let selectedSeats = [];
+
+      // Movie Selection Page
+      const movieList = document.getElementById("movieList");
+      const moviePage = document.getElementById("moviePage");
+
+      // Timing Selection Page
+      const timingPage = document.getElementById("timingPage");
+      const selectedMovieTitle = document.getElementById("selectedMovieTitle");
+      const timingList = document.getElementById("timingList");
+
+      // Seat Selection Page
+      const seatPage = document.getElementById("seatPage");
+      const seatsGrid = document.getElementById("seatsGrid");
+      const selectedTimingElement = document.getElementById("selectedTiming");
+      const totalPriceElement = document.getElementById("totalPrice");
+      const bookNowButton = document.getElementById("bookNow");
+
+      // Render Movie List
+      function renderMovies() {
+        movies.forEach((movie, index) => {
+          const movieItem = document.createElement("li");
+          movieItem.classList.add(
+            "cursor-pointer",
+            "text-blue-500",
+            "hover:underline"
+          );
+          movieItem.innerText = movie.title;
+          movieItem.onclick = () => selectMovie(index);
+          movieList.appendChild(movieItem);
+        });
+      }
+
+      // Select Movie and Go to Timings
+      function selectMovie(movieIndex) {
+        selectedMovie = movies[movieIndex];
+        moviePage.classList.add("hidden");
+        timingPage.classList.remove("hidden");
+
+        // Set selected movie title
+        selectedMovieTitle.innerText = selectedMovie.title;
+
+        // Render timings for selected movie
+        timingList.innerHTML = "";
+        selectedMovie.timings.forEach((timing, index) => {
+          const timingItem = document.createElement("li");
+          timingItem.classList.add(
+            "cursor-pointer",
+            "text-blue-500",
+            "hover:underline"
+          );
+          timingItem.innerText = timing;
+          timingItem.onclick = () => selectTiming(index);
+          timingList.appendChild(timingItem);
+        });
+      }
+
+      // Select Timing and Go to Seat Selection
+      function selectTiming(timingIndex) {
+        selectedTiming = selectedMovie.timings[timingIndex];
+        timingPage.classList.add("hidden");
+        seatPage.classList.remove("hidden");
+
+        // Display selected timing
+        selectedTimingElement.innerText = `Timing: ${selectedTiming}`;
+
+        // Render Seats Grid
+        renderSeats();
+      }
+
+      // Render Seats Grid for Seat Selection
+      function renderSeats() {
+        seatsGrid.innerHTML = "";
+        selectedMovie.seats.forEach((isAvailable, seatIndex) => {
+          const seatButton = document.createElement("button");
+          seatButton.innerText = seatIndex + 1;
+          seatButton.classList.add(
+            "seat",
+            "w-12",
+            "h-12",
+            "rounded-lg",
+            "border"
+          );
+
+          if (!isAvailable) {
+            seatButton.classList.add("unavailable");
+            seatButton.disabled = true;
+          } else {
+            seatButton.onclick = () => toggleSeatSelection(seatIndex);
+          }
+
+          seatsGrid.appendChild(seatButton);
+        });
+      }
+
+      // Toggle Seat Selection
+      function toggleSeatSelection(seatIndex) {
+        if (selectedSeats.includes(seatIndex)) {
+          selectedSeats = selectedSeats.filter((seat) => seat !== seatIndex);
+          document
+            .querySelectorAll(".seat")
+            [seatIndex].classList.remove("selected");
+        } else {
+          selectedSeats.push(seatIndex);
+          document
+            .querySelectorAll(".seat")
+            [seatIndex].classList.add("selected");
+        }
+
+        // Update Price
+        totalPriceElement.innerText = selectedSeats.length * ticketPrice;
+      }
+
+      // Book Now Action
+      bookNowButton.onclick = () => {
+        if (selectedSeats.length > 0) {
+          alert(
+            `Booking confirmed for ${
+              selectedSeats.length
+            } seats at ${selectedTiming} for $${
+              selectedSeats.length * ticketPrice
+            }`
+          );
+        } else {
+          alert("Please select at least one seat!");
+        }
+      };
+
+      // Initialize the Movie Selection Page
+      renderMovies();
+    </script>
+  </body>
+</html>

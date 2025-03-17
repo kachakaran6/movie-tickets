@@ -1,48 +1,31 @@
 // src/App.js
 import React, { useState } from "react";
-import MovieList from "./components/MovieList";
 import TicketBooking from "./components/TicketBooking";
 
 const App = () => {
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
 
-  const movies = [
-    {
-      id: 1,
-      title: "Inception",
-      description: "A mind-bending thriller about dreams within dreams.",
-      poster: "https://example.com/inception.jpg",
-    },
-    {
-      id: 2,
-      title: "The Dark Knight",
-      description: "Batman battles the Joker in Gotham City.",
-      poster: "https://example.com/dark_knight.jpg",
-    },
-    {
-      id: 3,
-      title: "Interstellar",
-      description:
-        "A group of explorers travel through a wormhole to save humanity.",
-      poster: "https://example.com/interstellar.jpg",
-    },
-  ];
+  const movie = {
+    title: "Inception",
+    description:
+      "A skilled thief is given a chance to have his criminal record erased, if he can successfully perform an inception.",
+    poster: "https://via.placeholder.com/200x300?text=Movie+Poster",
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-600 text-white p-4 text-center text-3xl font-semibold">
-        Movie Ticket Booking App
-      </header>
-      <main className="p-5">
-        {selectedMovie ? (
-          <TicketBooking
-            movie={selectedMovie}
-            onClose={() => setSelectedMovie(null)}
-          />
-        ) : (
-          <MovieList movies={movies} onSelect={setSelectedMovie} />
-        )}
-      </main>
+    <div className="App">
+      <div className="flex justify-center p-6">
+        <button
+          onClick={() => setShowBooking(true)}
+          className="py-2 px-4 bg-blue-500 text-white rounded-lg"
+        >
+          Book Tickets for {movie.title}
+        </button>
+      </div>
+
+      {showBooking && (
+        <TicketBooking movie={movie} onClose={() => setShowBooking(false)} />
+      )}
     </div>
   );
 };
